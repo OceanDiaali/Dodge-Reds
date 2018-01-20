@@ -57,7 +57,7 @@ function scene:create( event )
     --hero
     hero = display.newRoundedRect( 165, 200, 20, 20, 5 )
     hero.strokeWidth = 1
-    hero:setFillColor( 0.8 )
+    hero:setFillColor( 0.1,0.8,0.9 )
     hero:setStrokeColor( 0, 1, 0 )
     hero.myName = "hero"
 
@@ -65,7 +65,7 @@ function scene:create( event )
  
 end--end of create scene
 -----------------------------
-local function updateLabels()
+function updateLabels()
     livesText.text = "Lives: " .. lives
     scoreText.text = "Score: " .. score
 end
