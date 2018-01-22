@@ -21,9 +21,11 @@ function scene:create( event )
     -- Code here runs when the scene is first created but has not yet appeared on screen
 
     enemiesTable = {}
+    starsTable = {}
     score = 0
+    secondsLeft = 30
 
-    Random = math.random
+    math.randomseed( os.time() )
 
     bg = display.newImageRect("image/background.png", 420, 600)
     bg.x = display.contentCenterX
@@ -46,13 +48,15 @@ function scene:create( event )
     lives.x = 270
     lives.y = 450
 
-    timeCount = display.newText( "60", 100, 200, native.systemFont, 26 )
+    timeCount = display.newText( "30", 100, 200, native.systemFont, 26 )
     timeCount.x = 270
     timeCount.y = 30
 
-    score = display.newText( "Score:0", 100, 200, native.systemFont, 26 )
-    score.x = 70
-    score.y = 30
+    scoreLabel = display.newText( "Score:"..score, 100, 200, native.systemFont, 26 )
+    scoreLabel.x = 70
+    scoreLabel.y = 30
+ 
+    star = display.newImageRect( "image/gold_star.png", 20,20 )
 
     --hero
     hero = display.newRoundedRect( 165, 200, 20, 20, 5 )
@@ -76,7 +80,7 @@ function createEnemy()
     physics.addBody( enemy, "dynamic", { radius=40, bounce=0.8 } )
     enemy.myName = "enemy"
 
-    local whereFrom = Random(3)
+    local whereFrom = math.random( 3 )
 
     if ( whereFrom == 1 ) then
         -- From the left
@@ -99,6 +103,43 @@ function createEnemy()
     enemy:applyTorque( math.random( -6,6 ) )
 
 end--end of create enemy function
+
+    function createStar()
+        --star = display.newImageRect( "image/gold_star.png", 20,20 )
+        table.insert( starsTable, star )
+        physics.addBody( star, "dynamic")
+        star.myName = "star"
+    
+        local whereFrom = math.random( 4 )
+    
+        if ( whereFrom == 1 ) then
+            -- From the left
+            star.x = -60
+            star.y = math.random( 500 )
+            star:setLinearVelocity( math.random( 40,120 ), math.random( 20,60 ) )
+        elseif ( whereFrom == 2 ) then
+            -- From the top
+            star.x = math.random( display.contentWidth )
+            star.y = -70
+            star:setLinearVelocity( math.random( -40,40 ), math.random( 40,120 ) )
+        elseif ( whereFrom == 3 ) then
+            -- From the right
+            star.x = display.contentWidth + 60
+            star.y = math.random( 500 )
+            star:setLinearVelocity( math.random( -120,-40 ), math.random( 20,60 ) )
+        elseif ( whereFrom == 4 ) then
+            -- From the bottom
+            star.x = 165
+            star.y = math.random( 500 )
+            star:setLinearVelocity( math.random( -120,40 ), math.random( 20,60 ) )    
+        end
+    
+        --for torque
+        --enemy:applyTorque( math.random( -6,6 ) )
+    
+    end--end of create star function    
+
+       
 
 --move our hero
 function moveHero(event)
@@ -126,7 +167,33 @@ function moveHero(event)
         end
                      
         return true
-end--end of move hero function    
+end--end of move hero function 
+---------------------------------
+function onLocalCollision( self, event )
+ 
+    if ( event.phase == "began" ) then
+        score = score + 1
+        scoreLabel.text = "Score:"..score
+ 
+    elseif ( event.phase == "ended" ) then
+        --print( self.myName .. ": collision ended with " .. event.other.myName )
+    end
+end
+-------------------------------------
+function updateTime( event )
+ 
+    -- Decrement the number of seconds
+    secondsLeft = secondsLeft - 1
+ 
+    -- Time is tracked in seconds; convert it to minutes and seconds
+    local seconds = secondsLeft % 60
+ 
+    -- Make it a formatted string
+    local timeDisplay = string.format( "%02d", seconds )
+     
+    -- Update the text object
+    timeCount.text = timeDisplay
+end       
 
  
 ---------------------------- 
@@ -142,15 +209,29 @@ function scene:show( event )
     elseif ( phase == "did" ) then
         -- Code here runs when the scene is entirely on screen
 
+        -- Run the timer
+        --local countDownTimer = timer.performWithDelay( 1000, updateTime, secondsLeft )
+        timer.performWithDelay( 1000, updateTime, secondsLeft )
+
         local physics = require( "physics" )
         physics.start()
         physics.setGravity( 0, 0 )
 
+        physics.addBody(hero, "static")
         --creates enemies every 1.5 seconds,infinitely
         timer.performWithDelay( 1500, createEnemy, 0 )
 
+        --creates stars every 2 seconds,infinitely
+        timer.performWithDelay( 2000, createStar, 0 )
+
         --move our hero listener
         hero:addEventListener("touch", moveHero)
+
+        hero.collision = onLocalCollision
+        hero:addEventListener( "collision" )
+ 
+        star.collision = onLocalCollision
+        star:addEventListener( "collision" )
  
     end
 end--end of show scene
