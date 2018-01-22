@@ -191,8 +191,16 @@ function updateTime( event )
     -- Make it a formatted string
     local timeDisplay = string.format( "%02d", seconds )
      
-    -- Update the text object
-    timeCount.text = timeDisplay
+    if(seconds <= 5 ) then
+        timeCount:setFillColor(1,0,0)
+        timeCount.text = timeDisplay
+        if(seconds == 0)then
+            timeCount.text = "Time Up"
+        end    
+    else    
+         -- Update the text object
+         timeCount.text = timeDisplay
+    end     
 end       
 
  
