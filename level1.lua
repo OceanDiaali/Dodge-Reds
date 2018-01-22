@@ -25,6 +25,9 @@ function scene:create( event )
     score = 0
     secondsLeft = 30
 
+    backgroundMusic = audio.loadStream( "sound/gamemusic.wav" )
+
+
     math.randomseed( os.time() )
 
     bg = display.newImageRect("image/background.png", 420, 600)
@@ -196,6 +199,7 @@ function updateTime( event )
         timeCount.text = timeDisplay
         if(seconds == 0)then
             timeCount.text = "Time Up"
+            audio.stop(gameMusic)
         end    
     else    
          -- Update the text object
@@ -217,6 +221,8 @@ function scene:show( event )
     elseif ( phase == "did" ) then
         -- Code here runs when the scene is entirely on screen
 
+        gameMusic = audio.play( backgroundMusic, { loops = -1} )
+         
         -- Run the timer
         --local countDownTimer = timer.performWithDelay( 1000, updateTime, secondsLeft )
         timer.performWithDelay( 1000, updateTime, secondsLeft )
